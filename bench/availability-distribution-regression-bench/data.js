@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1734909726331,
+  "lastUpdate": 1734952811133,
   "repoUrl": "https://github.com/paritytech/polkadot-sdk",
   "entries": {
     "availability-distribution-regression-bench": [
@@ -44629,6 +44629,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "availability-store",
             "value": 0.18069537287333337,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "xuliuchengxlc@gmail.com",
+            "name": "Liu-Cheng Xu",
+            "username": "liuchengxu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ca7817922148c1e6f6856138998f7135f42f3f4f",
+          "message": "Update prometheus binding failure logging format (#6979)\n\nUsing `{:#?}` for the error details is a bit annoying, this change makes\na more consistent formatting style for error messages.\n\n---------\n\nCo-authored-by: Bastian Köcher <git@kchr.de>\nCo-authored-by: command-bot <>\nCo-authored-by: Sebastian Kunert <skunert49@gmail.com>",
+          "timestamp": "2024-12-23T10:20:37Z",
+          "tree_id": "9ddfd006fd81961620b9bd150ddccdce12d4aa8e",
+          "url": "https://github.com/paritytech/polkadot-sdk/commit/ca7817922148c1e6f6856138998f7135f42f3f4f"
+        },
+        "date": 1734952794473,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Received from peers",
+            "value": 433.3333333333332,
+            "unit": "KiB"
+          },
+          {
+            "name": "Sent to peers",
+            "value": 18481.666666666653,
+            "unit": "KiB"
+          },
+          {
+            "name": "bitfield-distribution",
+            "value": 0.02449202413333333,
+            "unit": "seconds"
+          },
+          {
+            "name": "availability-distribution",
+            "value": 0.01614988248,
+            "unit": "seconds"
+          },
+          {
+            "name": "test-environment",
+            "value": 0.008756838493333408,
+            "unit": "seconds"
+          },
+          {
+            "name": "availability-store",
+            "value": 0.17956165633999993,
             "unit": "seconds"
           }
         ]
