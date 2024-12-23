@@ -26,6 +26,7 @@ pub enum CallType {
 
 /// The traces of a transaction.
 #[derive(TypeInfo, Encode, Decode, Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(untagged)]
 pub enum Traces<Gas = Weight> {
 	CallTraces(Vec<CallTrace<Gas>>),
 }

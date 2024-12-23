@@ -1100,7 +1100,6 @@ where
 				read_only,
 				&value_transferred,
 				&input_data,
-				&self.gas_meter,
 				&frame.nested_gas,
 			);
 
@@ -1108,7 +1107,11 @@ where
 				.unwrap_or_else(|| executable.execute(self, entry_point, input_data))
 				.map_err(|e| ExecError { error: e.error, origin: ErrorOrigin::Callee })?;
 
-			<Tracer as Tracing<T>>::exit_child_span(self.tracer, &output, &self.gas_meter);
+			<Tracer as Tracing<T>>::exit_child_span(
+				self.tracer,
+				&output,
+				&top_frame_mut!(self).nested_gas,
+			);
 
 			// Avoid useless work that would be reverted anyways.
 			if output.did_revert() {

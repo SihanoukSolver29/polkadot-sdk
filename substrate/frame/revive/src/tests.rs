@@ -4832,7 +4832,7 @@ fn tracing_works() {
 	use crate::evm::*;
 	use CallType::*;
 	let (code, _code_hash) = compile_module("tracing").unwrap();
-	let (wasm_callee, _) = compile_module("dummy").unwrap();
+	let (wasm_callee, _) = compile_module("dummy_2").unwrap();
 	ExtBuilder::default().existential_deposit(200).build().execute_with(|| {
 		let _ = <Test as Config>::Currency::set_balance(&ALICE, 1_000_000);
 
@@ -4843,9 +4843,12 @@ fn tracing_works() {
 			builder::bare_instantiate(Code::Upload(code)).build_and_unwrap_contract();
 
 		let result = builder::bare_call(addr).data((3u32, addr_callee).encode()).build();
+		println!("{}", serde_json::to_string_pretty(&result.traces).unwrap());
+
+		let traces = result.traces.map(|_| Weight::default());
 
 		assert_eq!(
-			result.traces.map(|_| Weight::default()),
+			traces,
 			Traces::CallTraces(vec![CallTrace {
 				from: ALICE_ADDR,
 				to: addr,

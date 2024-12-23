@@ -49,7 +49,6 @@ pub trait Tracing<T: Config>: Default {
 		value: &U256,
 		input: &[u8],
 		gas_meter: &GasMeter<T>,
-		nested_gas_meter: &GasMeter<T>,
 	);
 
 	/// Called after a contract call is executed
@@ -92,7 +91,6 @@ where
 		value: &U256,
 		input: &[u8],
 		gas_meter: &GasMeter<T>,
-		nested_gas_meter: &GasMeter<T>,
 	) {
 		match self {
 			Tracer::CallTracer(tracer) => {
@@ -105,7 +103,6 @@ where
 					value,
 					input,
 					gas_meter,
-					nested_gas_meter,
 				);
 			},
 			Tracer::Disabled => {
@@ -148,7 +145,6 @@ where
 		value: &U256,
 		input: &[u8],
 		gas_meter: &GasMeter<T>,
-		nested_gas_meter: &GasMeter<T>,
 	) {
 		let call_type = if is_read_only {
 			CallType::StaticCall
@@ -164,8 +160,7 @@ where
 			value: (*value).into(),
 			call_type,
 			input: input.to_vec(),
-			gas: nested_gas_meter.gas_left(),
-			gas_used: gas_meter.gas_left(),
+			gas: gas_meter.gas_left(),
 			..Default::default()
 		});
 
@@ -177,7 +172,7 @@ where
 		let current_index = self.current_stack.pop().unwrap();
 		let trace = &mut self.traces[current_index];
 		trace.output = output.data.clone();
-		trace.gas_used = trace.gas_used.saturating_sub(gas_meter.gas_left());
+		trace.gas_used = gas_meter.gas_consumed();
 
 		//  move the current trace into its parent
 		if let Some(parent_index) = self.current_stack.last() {
