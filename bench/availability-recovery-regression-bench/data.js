@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1734909701800,
+  "lastUpdate": 1734952786959,
   "repoUrl": "https://github.com/paritytech/polkadot-sdk",
   "entries": {
     "availability-recovery-regression-bench": [
@@ -35939,6 +35939,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "availability-recovery",
             "value": 11.418369748300004,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "xuliuchengxlc@gmail.com",
+            "name": "Liu-Cheng Xu",
+            "username": "liuchengxu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ca7817922148c1e6f6856138998f7135f42f3f4f",
+          "message": "Update prometheus binding failure logging format (#6979)\n\nUsing `{:#?}` for the error details is a bit annoying, this change makes\na more consistent formatting style for error messages.\n\n---------\n\nCo-authored-by: Bastian Köcher <git@kchr.de>\nCo-authored-by: command-bot <>\nCo-authored-by: Sebastian Kunert <skunert49@gmail.com>",
+          "timestamp": "2024-12-23T10:20:37Z",
+          "tree_id": "9ddfd006fd81961620b9bd150ddccdce12d4aa8e",
+          "url": "https://github.com/paritytech/polkadot-sdk/commit/ca7817922148c1e6f6856138998f7135f42f3f4f"
+        },
+        "date": 1734952769988,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Received from peers",
+            "value": 307203,
+            "unit": "KiB"
+          },
+          {
+            "name": "Sent to peers",
+            "value": 1.6666666666666665,
+            "unit": "KiB"
+          },
+          {
+            "name": "test-environment",
+            "value": 0.2329567387,
+            "unit": "seconds"
+          },
+          {
+            "name": "availability-recovery",
+            "value": 11.647778411566666,
             "unit": "seconds"
           }
         ]
