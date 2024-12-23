@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1734909776336,
+  "lastUpdate": 1734952860890,
   "repoUrl": "https://github.com/paritytech/polkadot-sdk",
   "entries": {
     "statement-distribution-regression-bench": [
@@ -26439,6 +26439,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "test-environment",
             "value": 0.04531001438599994,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "xuliuchengxlc@gmail.com",
+            "name": "Liu-Cheng Xu",
+            "username": "liuchengxu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ca7817922148c1e6f6856138998f7135f42f3f4f",
+          "message": "Update prometheus binding failure logging format (#6979)\n\nUsing `{:#?}` for the error details is a bit annoying, this change makes\na more consistent formatting style for error messages.\n\n---------\n\nCo-authored-by: Bastian Köcher <git@kchr.de>\nCo-authored-by: command-bot <>\nCo-authored-by: Sebastian Kunert <skunert49@gmail.com>",
+          "timestamp": "2024-12-23T10:20:37Z",
+          "tree_id": "9ddfd006fd81961620b9bd150ddccdce12d4aa8e",
+          "url": "https://github.com/paritytech/polkadot-sdk/commit/ca7817922148c1e6f6856138998f7135f42f3f4f"
+        },
+        "date": 1734952843912,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Sent to peers",
+            "value": 127.92999999999995,
+            "unit": "KiB"
+          },
+          {
+            "name": "Received from peers",
+            "value": 106.39999999999996,
+            "unit": "KiB"
+          },
+          {
+            "name": "statement-distribution",
+            "value": 0.03502030392400002,
+            "unit": "seconds"
+          },
+          {
+            "name": "test-environment",
+            "value": 0.04441966039799995,
             "unit": "seconds"
           }
         ]
