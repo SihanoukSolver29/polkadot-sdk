@@ -37,9 +37,9 @@ pub enum Tracer {
 	CallTracer(CallTracer),
 }
 
-/// Defines methods to capture contract calls, enabling external observers to
-/// measure, trace, and react to contract interactions.
+/// Defines methods to capture contract calls
 pub trait Tracing<T: Config>: Default {
+	/// Called before a contract call is executed
 	fn enter_child_span(
 		&mut self,
 		from: &H160,
@@ -52,7 +52,8 @@ pub trait Tracing<T: Config>: Default {
 		nested_gas_meter: &GasMeter<T>,
 	);
 
-	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_left: &GasMeter<T>);
+	/// Called after a contract call is executed
+	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_meter: &GasMeter<T>);
 }
 
 impl Tracer {
@@ -114,10 +115,10 @@ where
 	}
 
 	//fn after_call(&mut self, output: &ExecReturnValue);
-	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_left: &GasMeter<T>) {
+	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_meter: &GasMeter<T>) {
 		match self {
 			Tracer::CallTracer(tracer) => {
-				<CallTracer as Tracing<T>>::exit_child_span(tracer, output, gas_left);
+				<CallTracer as Tracing<T>>::exit_child_span(tracer, output, gas_meter);
 			},
 			Tracer::Disabled => {
 				log::trace!(target: LOG_TARGET, "call result {output:?}")
