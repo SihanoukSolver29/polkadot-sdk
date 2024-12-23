@@ -1056,7 +1056,6 @@ where
 			let frame = top_frame_mut!(self);
 			let read_only = frame.read_only;
 			let value_transferred = frame.value_transferred.clone();
-			let gas_limit = frame.nested_gas.gas_left();
 			let account_id = &frame.account_id.clone();
 
 			// We need to charge the storage deposit before the initial transfer so that
@@ -1090,8 +1089,8 @@ where
 				)?;
 			}
 
-			let contract_address = T::AddressMapper::to_address(&top_frame!(self).account_id);
-			let maybe_caller_address = self.caller().account_id().map(T::AddressMapper::to_address);
+			let contract_address = T::AddressMapper::to_address(account_id);
+			let maybe_caller_address = caller.account_id().map(T::AddressMapper::to_address);
 
 			<Tracer as Tracing<T>>::enter_child_span(
 				self.tracer,
@@ -1100,15 +1099,16 @@ where
 				is_delegate_call,
 				read_only,
 				&value_transferred,
-				&gas_limit,
 				&input_data,
+				&self.gas_meter,
+				&frame.nested_gas,
 			);
 
 			let output = T::Debug::intercept_call(&contract_address, entry_point, &input_data)
 				.unwrap_or_else(|| executable.execute(self, entry_point, input_data))
 				.map_err(|e| ExecError { error: e.error, origin: ErrorOrigin::Callee })?;
 
-			<Tracer as Tracing<T>>::exit_child_span(self.tracer, &output);
+			<Tracer as Tracing<T>>::exit_child_span(self.tracer, &output, &self.gas_meter);
 
 			// Avoid useless work that would be reverted anyways.
 			if output.did_revert() {

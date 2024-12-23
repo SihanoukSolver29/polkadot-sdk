@@ -1,4 +1,5 @@
 #![allow(missing_docs)]
+use crate::Weight;
 use alloc::vec::Vec;
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
@@ -23,16 +24,30 @@ pub enum CallType {
 	DelegateCall,
 }
 
+/// The traces of a transaction.
 #[derive(TypeInfo, Encode, Decode, Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub enum Traces {
-	CallTraces(Vec<CallTrace>),
+pub enum Traces<Gas = Weight> {
+	CallTraces(Vec<CallTrace<Gas>>),
+}
+
+impl<Gas> Traces<Gas> {
+	/// Return mapped traces with the given gas mapper.
+	pub fn map<F, T>(self, gas_mapper: F) -> Traces<T>
+	where
+		F: Fn(Gas) -> T + Copy,
+	{
+		match self {
+			Traces::CallTraces(traces) =>
+				Traces::CallTraces(traces.into_iter().map(|trace| trace.map(gas_mapper)).collect()),
+		}
+	}
 }
 
 /// A smart contract execution call trace.
 #[derive(
 	TypeInfo, Default, Encode, Decode, Serialize, Deserialize, Clone, Debug, Eq, PartialEq,
 )]
-pub struct CallTrace {
+pub struct CallTrace<Gas = Weight> {
 	/// Address of the sender.
 	pub from: H160,
 	/// Address of the receiver.
@@ -46,17 +61,37 @@ pub struct CallTrace {
 	#[serde(rename = "type")]
 	pub call_type: CallType,
 	/// Gas limit.
-	pub gas: U256,
+	pub gas: Gas,
 	/// Amount of gas used.
 	#[serde(rename = "gasUsed")]
-	pub gas_used: U256,
+	pub gas_used: Gas,
 	///  Return data.
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub output: Vec<u8>,
 	/// Amount of gas provided for the call.
 	/// List of sub-calls.
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub calls: Vec<CallTrace>,
+	pub calls: Vec<CallTrace<Gas>>,
+}
+
+impl<Gas> CallTrace<Gas> {
+	/// Return a new call gas with a mapped gas value.
+	pub fn map<F, T>(self, gas_mapper: F) -> CallTrace<T>
+	where
+		F: Fn(Gas) -> T + Copy,
+	{
+		CallTrace {
+			from: self.from,
+			to: self.to,
+			input: self.input,
+			value: self.value,
+			call_type: self.call_type,
+			gas: gas_mapper(self.gas),
+			gas_used: gas_mapper(self.gas_used),
+			output: self.output,
+			calls: self.calls.into_iter().map(|call| call.map(gas_mapper)).collect(),
+		}
+	}
 }
 
 /// A transaction trace

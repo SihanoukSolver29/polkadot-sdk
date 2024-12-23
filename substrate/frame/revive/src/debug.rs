@@ -21,7 +21,7 @@ pub use crate::{
 	primitives::ExecReturnValue,
 	BalanceOf,
 };
-use crate::{Config, Weight, LOG_TARGET};
+use crate::{Config, GasMeter, LOG_TARGET};
 use alloc::vec::Vec;
 use sp_core::{H160, U256};
 
@@ -47,18 +47,21 @@ pub trait Tracing<T: Config>: Default {
 		is_delegate_call: bool,
 		is_read_only: bool,
 		value: &U256,
-		gas_limit: &Weight,
 		input: &[u8],
+		gas_meter: &GasMeter<T>,
+		nested_gas_meter: &GasMeter<T>,
 	);
 
-	fn exit_child_span(&mut self, output: &ExecReturnValue);
+	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_left: &GasMeter<T>);
 }
 
 impl Tracer {
+	/// Creates a new [`Tracer::CallTracer`].
 	pub fn new_call_tracer() -> Self {
 		Tracer::CallTracer(CallTracer::default())
 	}
 
+	/// Returns the call tracer if it is enabled.
 	pub fn as_call_tracer(self) -> Option<CallTracer> {
 		match self {
 			Tracer::CallTracer(tracer) => Some(tracer),
@@ -66,6 +69,7 @@ impl Tracer {
 		}
 	}
 
+	/// Returns the traces collected by the tracer.
 	pub fn traces(self) -> Traces {
 		return match self {
 			Tracer::CallTracer(tracer) => Traces::CallTraces(tracer.traces),
@@ -85,8 +89,9 @@ where
 		is_delegate_call: bool,
 		is_read_only: bool,
 		value: &U256,
-		gas_limit: &Weight,
 		input: &[u8],
+		gas_meter: &GasMeter<T>,
+		nested_gas_meter: &GasMeter<T>,
 	) {
 		match self {
 			Tracer::CallTracer(tracer) => {
@@ -97,21 +102,22 @@ where
 					is_delegate_call,
 					is_read_only,
 					value,
-					gas_limit,
 					input,
+					gas_meter,
+					nested_gas_meter,
 				);
 			},
 			Tracer::Disabled => {
-				log::trace!(target: LOG_TARGET, "call (delegate: {is_delegate_call:?}, read_only: {is_read_only:?}) from: {from:?}, to: {to:?} value: {value:?} gas_limit: {gas_limit:?} input_data: {input:?}");
+				log::trace!(target: LOG_TARGET, "call (delegate: {is_delegate_call:?}, read_only: {is_read_only:?}) from: {from:?}, to: {to:?} value: {value:?}  input_data: {input:?}");
 			},
 		}
 	}
 
 	//fn after_call(&mut self, output: &ExecReturnValue);
-	fn exit_child_span(&mut self, output: &ExecReturnValue) {
+	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_left: &GasMeter<T>) {
 		match self {
 			Tracer::CallTracer(tracer) => {
-				<CallTracer as Tracing<T>>::exit_child_span(tracer, output);
+				<CallTracer as Tracing<T>>::exit_child_span(tracer, output, gas_left);
 			},
 			Tracer::Disabled => {
 				log::trace!(target: LOG_TARGET, "call result {output:?}")
@@ -139,10 +145,10 @@ where
 		is_delegate_call: bool,
 		is_read_only: bool,
 		value: &U256,
-		gas_limit: &Weight,
 		input: &[u8],
+		gas_meter: &GasMeter<T>,
+		nested_gas_meter: &GasMeter<T>,
 	) {
-		log::info!(target: LOG_TARGET, "call (delegate: {is_delegate_call:?}, read_only: {is_read_only:?}) from: {from:?}, to: {to:?} value: {value:?} gas_limit: {gas_limit:?} input_data: {input:?}");
 		let call_type = if is_read_only {
 			CallType::StaticCall
 		} else if is_delegate_call {
@@ -157,16 +163,20 @@ where
 			value: (*value).into(),
 			call_type,
 			input: input.to_vec(),
+			gas: nested_gas_meter.gas_left(),
+			gas_used: gas_meter.gas_left(),
 			..Default::default()
 		});
 
 		// Push the index onto the stack of the current active trace
 		self.current_stack.push(self.traces.len() - 1);
 	}
-	fn exit_child_span(&mut self, output: &ExecReturnValue) {
+	fn exit_child_span(&mut self, output: &ExecReturnValue, gas_meter: &GasMeter<T>) {
 		// Set the output of the current trace
 		let current_index = self.current_stack.pop().unwrap();
-		self.traces[current_index].output = output.data.clone();
+		let trace = &mut self.traces[current_index];
+		trace.output = output.data.clone();
+		trace.gas_used = trace.gas_used.saturating_sub(gas_meter.gas_left());
 
 		//  move the current trace into its parent
 		if let Some(parent_index) = self.current_stack.last() {

@@ -4845,7 +4845,7 @@ fn tracing_works() {
 		let result = builder::bare_call(addr).data((3u32, addr_callee).encode()).build();
 
 		assert_eq!(
-			result.traces,
+			result.traces.map(|_| Weight::default()),
 			Traces::CallTraces(vec![CallTrace {
 				from: ALICE_ADDR,
 				to: addr,
